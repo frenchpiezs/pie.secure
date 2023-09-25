@@ -63,7 +63,7 @@ show_menu() {
     echo  "\e[1;33m12. Set Up Daily Lynis and CHKrootkit Scans\e[0m"
     echo  "\e[1;33m13. Monitor Failed SSH Logins\e[0m"
     echo  "\e[1;33m14. Check System Health\e[0m"
-echo  "\e[1;33m8. Malware & Vulnerabilities Check\e[0m"
+    echo  "\e[1;33m8. Malware & Vulnerabilities Check\e[0m"
     echo
     echo  "\e[1;37mEnter A Number:\e[0m "
 }
