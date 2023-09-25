@@ -10,8 +10,29 @@ echo 'pie.secure Will Log Everything Into /var/log/piesecure.log'
 echo 'Loading Script...'
 sleep 1
 
-# Log File
 
+# Backup essential configuration files
+backup_configs() {
+    echo 'Backing up essential configuration files...'
+    mkdir -p /backup/piesecure
+    cp /etc/passwd /backup/piesecure/passwd.backup
+    cp /etc/shadow /backup/piesecure/shadow.backup
+    cp /etc/ssh/sshd_config /backup/piesecure/sshd_config.backup
+    echo 'Backup completed! Files saved in /backup/piesecure/'
+    sleep 3
+}
+
+# Log rotation for piesecure.log
+rotate_logs() {
+    echo 'Rotating piesecure.log...'
+    if [ -f "$LOG_FILE" ]; then
+        mv "$LOG_FILE" "$LOG_FILE.old"
+    fi
+    echo 'Log rotation completed! Previous logs saved as piesecure.log.old'
+    sleep 3
+}
+
+# Log File
 LOG_FILE="/var/log/piesecure.log"
 
 log() {
@@ -34,16 +55,18 @@ show_menu() {
     echo  "\e[1;33m5. User Management Menu\e[0m"
     echo  "\e[1;33m6. SSH Permissions\e[0m"
     echo  "\e[1;33m7. Password Policies\e[0m"
-    echo  "\e[1;33m8. Malware & Vulnerabilities Check\e[0m"
+    
+    echo  "\e[1;33m9. Backup Essential Configurations\e[0m"
+    echo  "\e[1;33m10. Rotate piesecure.log\e[0m"
+
+    echo  "\e[1;33m11. Secure SSH Configuration (Disable Root Login)\e[0m"
+    echo  "\e[1;33m12. Set Up Daily Lynis and CHKrootkit Scans\e[0m"
+    echo  "\e[1;33m13. Monitor Failed SSH Logins\e[0m"
+    echo  "\e[1;33m14. Check System Health\e[0m"
+echo  "\e[1;33m8. Malware & Vulnerabilities Check\e[0m"
     echo
     echo  "\e[1;37mEnter A Number:\e[0m "
 }
-
-
-
-
-
-
 
 while true
 do
@@ -66,14 +89,16 @@ do
             apt autoremove
             apt-get install unattended-upgrades
             dpkg-reconfigure unattended-upgrades
-            echo 'Complete! Returning To Menu!'
+            echo 'Complete!'
+            get_user_feedback
+            echo 'Returning To Menu!'
             sleep 3
             ;;
         2)
             echo 'This Will Check If UFW Is Installed (Will Install If Its Not) and Enable It'
             echo 'Press Control + C To Cancel Now, Do Not Cancel While Script Is Running'
             sleep 5
-            if apt list --installed ufw | grep -q 'ufw';  
+            if is_tool_installed ufw  
             then
                 echo 'UFW Is Installed, Enabling If Not Already'
                 sleep 3
@@ -101,7 +126,9 @@ do
             ufw deny 123/udp # Disables NTP
             ufw deny 19/udp # Disbales Chargen
             sleep 2
-            echo 'Complete! Returning To Menu!'
+            echo 'Complete!'
+            get_user_feedback
+            echo 'Returning To Menu!'
             sleep 3
             ;;
 
@@ -335,6 +362,26 @@ EOL
 
         ;;
 
+
+        9)
+            backup_configs
+            ;;
+        10)
+            rotate_logs
+            ;;
+
+        11)
+            secure_ssh_config
+            ;;
+        12)
+            setup_regular_scans
+            ;;
+        13)
+            monitor_failed_logins
+            ;;
+        14)
+            check_system_health
+            ;;
         8)
             echo 'This Will Check And See If ClamTK Is Installed (Will Install If Not) and Check For Other Common Vulnerabilities'
             echo 'Press Control + C To Cancel Now, Do Not Cancel While Script Is Running'
@@ -363,7 +410,7 @@ EOL
             echo 'Press Control + C To Cancel Now, Do Not Cancel While Script Is Running'
             sleep 5
 
-            if apt list --installed lynis | grep -q 'lynis';
+            if is_tool_installed lynis;
             then
                 echo 'Lynis Is Installed'
                 echo 'Running System Audit'
@@ -386,7 +433,7 @@ EOL
             echo 'Press Control + C To Cancel Now, Do Not Cancel While Script Is Running'
             sleep 5
 
-            if apt list --installed chkrootkit | grep -q 'chkrootkit'
+            if is_tool_installed chkrootkit
             then
                 echo 'CHKrootkit Is Installed'
                 echo 'Running Rootkit Detection'
@@ -423,3 +470,66 @@ EOL
     
 done
 
+
+# Disable root login for SSH
+secure_ssh_config() {
+    echo 'Disabling root login for SSH...'
+    sed -i 's/PermitRootLogin yes/PermitRootLogin no/' /etc/ssh/sshd_config
+    systemctl restart sshd
+    echo 'SSH root login disabled!'
+    sleep 3
+}
+
+# Set up regular scans using Lynis and CHKrootkit via cron jobs
+setup_regular_scans() {
+    echo 'Setting up daily scans with Lynis and CHKrootkit...'
+    echo "0 2 * * * root lynis audit system" >> /etc/crontab
+    echo "30 2 * * * root chkrootkit" >> /etc/crontab
+    systemctl restart cron
+    echo 'Daily scans scheduled at 2:00 AM and 2:30 AM respectively!'
+    sleep 3
+}
+
+# Monitor repeated failed login attempts and suggest the use of fail2ban
+monitor_failed_logins() {
+    echo 'Checking for repeated failed login attempts...'
+    awk '($(NF-1) = /sshd/ && $NF ~ /Failed/) {print $(NF-3)}' /var/log/auth.log | sort | uniq -c | sort -nr
+    echo 'If there are many failed login attempts, consider installing and configuring fail2ban.'
+    sleep 3
+}
+
+# Monitor basic system health metrics
+check_system_health() {
+    echo 'Checking system health...'
+    echo 'Disk Usage:'
+    df -h
+    echo 'Memory Usage:'
+    free -h
+    echo 'Top Processes:'
+    top -n 1 -b | head -10
+    sleep 3
+}
+
+# Get user feedback after each operation
+get_user_feedback() {
+    echo 'Was the operation successful? (yes/no)'
+    read feedback
+    if [ "$feedback" = "yes" ]; then
+        log 'User confirmed the operation was successful.'
+        echo 'Thank you for the feedback!'
+    else
+        log 'User reported an issue with the operation.'
+        echo 'Please consider reporting the issue for further assistance.'
+    fi
+    sleep 3
+}
+
+# Check if a tool is installed
+is_tool_installed() {
+    local tool_name="$1"
+    if dpkg -l | grep -qw "$tool_name"; then
+        return 0
+    else
+        return 1
+    fi
+}
