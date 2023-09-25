@@ -14,7 +14,7 @@
 - **Firewall Setup (UFW):** Checks if Uncomplicated Firewall (UFW) is installed and enables it if necessary.
 - **Firewall Policies:** Disables insecure ports like HTTP, SMTP, and more to improve security.
 - **Fix Shadow Permissions:** Sets permissions on the `/etc/shadow` file to restrict access.
-- **User Management Menu:** Sub-Meun that allows you to manage users, including adding/removing users and granting admin privileges.
+- **User Management Menu:** Sub-Menu that allows you to manage users, including adding/removing users and granting admin privileges.
 - **SSH Permissions:** Secures the SSH configuration by disabling root login and changing the SSH port.
 - **Password Policies:** Configures secure password policies, including length and complexity requirements.
 - **Malware & Vulnerabilities Check:** Checks for common vulnerabilities, runs ClamTK, Lynis, and CHKrootkit scans.
