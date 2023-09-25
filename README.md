@@ -19,6 +19,8 @@
 - **Password Policies:** Configures secure password policies, including length and complexity requirements.
 - **Malware & Vulnerabilities Check:** Checks for common vulnerabilities, runs ClamTK, Lynis, and CHKrootkit scans.
 
+![pie.secure Menu Interface(piesecure.png)]
+
 ## Usage
 
 1. Clone the repository to your local machine:
