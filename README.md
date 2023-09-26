@@ -32,13 +32,13 @@
 2. Make the script executable:
 
    ```bash
-   chmod +x script.sh
+   chmod +x piesecure.sh
    ```
 
 3. Run the script as a superuser (root):
 
    ```bash
-   sudo ./script.sh
+   sudo ./piesecure.sh
    ```
 
 4. Follow the on-screen menu options to perform various security tasks.
