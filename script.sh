@@ -10,13 +10,17 @@ echo 'pie.secure Will Log Everything Into /var/log/piesecure.log'
 echo 'Loading Script...'
 sleep 1
 
+# Ensure the log directory exists
+
+LOG_DIR="/var/log"
+mkdir -p "$LOG_DIR"
+
 # Log File
 
 LOG_FILE="/var/log/piesecure.log"
 
 log() {
     local message="$1"
-    echo "$message"
     echo "$(date '+%Y-%m-%d %H:%M:%S') - $message" >> "$LOG_FILE"
 }
 
@@ -39,15 +43,9 @@ show_menu() {
     echo  "\e[1;37mEnter A Number:\e[0m "
 }
 
-
-
-
-
-
-
 while true
 do
-    log
+    log "Menu Displayed."
     clear
     show_menu
     sleep 1
@@ -57,6 +55,7 @@ do
     
     case $user_number in
         1)
+            log "Option 1 selected: Update and upgrade packages."
             echo 'This Will Update & Upgrade Packages, and Enable Auto Updates'
             echo 'Press Control + C To Cancel Now, Do Not Cancel While Script Is Running'
             sleep 5
@@ -64,12 +63,21 @@ do
             apt upgrade -y
             apt autoclean
             apt autoremove
-            apt-get install unattended-upgrades
-            dpkg-reconfigure unattended-upgrades
-            echo 'Complete! Returning To Menu!'
-            sleep 3
+            clear
+            echo 'Please Check If Auto Updates Are On By Typing This In: systemctl status unattended-upgrades, inside a different terminal'
+            read -p 'Do You Want To Enable Auto Updates? (y/n): ' admin
+            if [ '$admin' = 'y' ]; then
+                apt-get install unattended-upgrades
+                dpkg-reconfigure unattended-upgrades
+                echo 'Complete! Returning To Menu!'
+                sleep 3
+            else
+                echo 'Complete! Returning To Menu!'
+                sleep 3
+            fi
             ;;
         2)
+            log "Option 2 selected: Firewall setup."
             echo 'This Will Check If UFW Is Installed (Will Install If Its Not) and Enable It'
             echo 'Press Control + C To Cancel Now, Do Not Cancel While Script Is Running'
             sleep 5
@@ -90,6 +98,7 @@ do
             fi
             ;;
         3)
+            log "Option 3 selected: Firewall policies."  
             echo 'This Will Disable HTTP, SMTP, and Other Unsecure Ports'
             echo 'Press Control + C To Cancel Now, Do Not Cancel While Script Is Running'
             sleep 5
@@ -106,6 +115,7 @@ do
             ;;
 
         4)
+            log "Option 4 selected: Changing Shadow File Permissions /etc/shadow"
             echo 'This Sets The Permissions Of The Shadow File So Only The Root Can Access It'
             echo 'Press Control + C To Cancel Now, Do Not Cancel While Script Is Running'
             sleep 5
@@ -116,15 +126,16 @@ do
             sleep 5
             ;;
         
-        5)
+        5)  
             show_user_submenu()
                 {
                     echo 'All Current Users:'
-                    cut -d: -f1 /etc/group
+                    cut -d: -f1,4 /etc/group | awk -F: '{ split($2, members, ","); printf "%s: ", $1; for (i in members) { printf "%s (admin), ", members[i] } printf "\n" }'
                     echo ''
                     echo ''
-                    echo '~~~~~~~~~~~~~~User Management Menu~~~~~~~~~~~~~'
-                    echo '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+                    echo '-----------------------------------------------'
+                    echo '--------------User Management Menu-------------'
+                    echo '-----------------------------------------------'
                     echo 'Scroll Up To See List Of All Curent Local Users'
                     echo '1. Add A User'
                     echo '2. Remove A User'
@@ -144,6 +155,7 @@ do
                 read user_submenu_number; #user_menu_number is a variable that reads from the keyboard
                 case $user_submenu_number in
                     1)
+                        log "User Menu Option 1 selected: Adding A User"
                         read -p 'Enter The Username To Add: ' username
                         read -p 'Do You Want To Give This User Admin Privileges? (y/n): ' admin
 
@@ -152,23 +164,25 @@ do
                         else
                             useradd -m -s /bin/bash '$username'
                         fi
-
                         echo 'User $username created successfully!'
                         sleep 3
                         ;;
                     2)
+                        log "User Menu Option 2 selected: Removing A User"
                         read -p 'Enter The Username To Delete: ' username
                         deluser --remove-home '$username'
                         echo 'User $username removed successfully!'
                         sleep 3
                         ;;
                     3)
+                        log "User Menu Option 3 selected: Remove User Admin"
                         read -p 'Enter the username: ' username
                         deluser '$username' sudo
                         echo 'Admin privileges removed from user $username successfully!'
                         sleep 3
                         ;;
                     4)
+                        log "User Menu Option 4 selected: Adding User Admin"
                         read -p 'Enter the username: ' username
                         usermod -aG sudo '$username'
                         echo 'Admin privileges added to user $username successfully!'
@@ -176,6 +190,7 @@ do
                         ;;
                     
                     5)
+                        log "User Menu Option 5 selected: Securing Sudoers File"
                         if [[ -w '/etc/sudoers' ]]; then
                             echo 'The sudoers file is writable. Fixing the issue...'
                             chmod -w /etc/sudoers
@@ -188,6 +203,7 @@ do
 
                         ;;
                     6)
+                        log "User Menu Option 6 selected: Returning To Main Menu"
                         break
                         ;;
                     *)
@@ -198,6 +214,7 @@ do
             done
             ;;
         6)
+            log "Option 6 selected: Installing OpenSSH and Securing It"
             echo 'This Will Check If OpenSSH Is Installed (Will Install If Its Not) and Secure It'
             echo 'NOTE: THIS ONLY CHECKS FOR CLIENT VERSION OF OPENSSH NOT THE SERVER VERSION'
             echo 'Press Control + C To Cancel Now, Do Not Cancel While Script Is Running'
@@ -288,10 +305,10 @@ do
                 echo 'Complete! Returning To Menu!'
                 sleep 3 
             fi
-
         ;;
 
         7)
+            log "Option 7 selected: Configuring Password Policies"
             min_length=12
 
             # Set the minimum number of lowercase, uppercase, digit, and special characters (adjust as needed)
@@ -324,18 +341,20 @@ EOL
             password required pam_unix.so sha512 maxdays=$max_days minlen=$min_length use_authtok
             password optional pam_unix.so sha512 remember=$warn_days minlen=$min_length use_authtok
 EOL
-            echo 'Password policies have been updated. Here Is The New Policy'
-            echo '- Minimum password length: $min_length characters'
-            echo '- Minimum lowercase letters: $min_lowercase'
-            echo '- Minimum uppercase letters: $min_uppercase'
-            echo '- Minimum digits: $min_digits'
-            echo '- Minimum special characters: $min_special'
+            echo "Password policies have been updated. Here Is The New Policy"
+            echo "- Minimum password length: $min_length characters"
+            echo "- Minimum lowercase letters: $min_lowercase"
+            echo "- Minimum uppercase letters: $min_uppercase"
+            echo "- Minimum digits: $min_digits"
+            echo "- Minimum special characters: $min_special"
+    
             sleep 10
             echo 'Complete! Returning To Menu!'
 
         ;;
 
         8)
+            log "Option 8 selected: Checking for Malware and Vulnerabilties"
             echo 'This Will Check And See If ClamTK Is Installed (Will Install If Not) and Check For Other Common Vulnerabilities'
             echo 'Press Control + C To Cancel Now, Do Not Cancel While Script Is Running'
             sleep 5
@@ -422,4 +441,3 @@ EOL
     esac
     
 done
-
