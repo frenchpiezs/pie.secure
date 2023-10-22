@@ -1,6 +1,6 @@
 # pie.secure
 
-**Version:** 1.1
+**Version:** 1.3
 
 **Author:** Mitchell "pie." Meister
 
@@ -32,13 +32,13 @@
 2. Make the script executable:
 
    ```bash
-   chmod +x piesecure.sh
+   chmod +x script.sh
    ```
 
 3. Run the script as a superuser (root):
 
    ```bash
-   sudo ./piesecure.sh
+   sudo ./script.sh
    ```
 
 4. Follow the on-screen menu options to perform various security tasks.
