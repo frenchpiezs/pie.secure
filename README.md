@@ -1,6 +1,6 @@
 # pie.secure
 
-**Version:** 1.3
+**Version:** 1.4
 
 **Author:** Mitchell "pie." Meister
 
@@ -18,6 +18,7 @@
 - **SSH Permissions:** Secures the SSH configuration by disabling root login and changing the SSH port.
 - **Password Policies:** Configures secure password policies, including length and complexity requirements.
 - **Malware & Vulnerabilities Check:** Checks for common vulnerabilities, runs ClamTK, Lynis, and CHKrootkit scans.
+- **Network Security Check:** Checks for common network vulnerabilities
 
 ![pie.secure Screenshot](piesecure.png)
 
