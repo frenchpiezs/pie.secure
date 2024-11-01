@@ -30,7 +30,7 @@ show_menu() {
     echo "\e[1;37m┌────────────────────────────────────────────────┐\e[0m"
     echo "\e[1;37m│\e[0m\e[1;37m-------------------pie.secure-------------------\e[0m\e[1;37m│\e[0m"
     echo "\e[1;37m│\e[0m\e[1;37m------------------------------------------------\e[0m\e[1;37m│\e[0m"
-    echo "\e[1;37m│\e[0m\e[1;37m---------------------V1.4-----------------------\e[0m\e[1;37m│\e[0m"
+    echo "\e[1;37m│\e[0m\e[1;37m---------------------V1.5-----------------------\e[0m\e[1;37m│\e[0m"
     echo "\e[1;37m└────────────────────────────────────────────────┘\e[0m"
     echo
     echo  "\e[1;33m1. Update\e[0m"
@@ -58,8 +58,7 @@ do
 
     # Runs a While Loop that constantly checks if user types in a number, one user types in a $user_number, it activate the following numbered case
     
-    read user_number; #user_number is a variable that reads from the keyboard
-    
+    read user_number; #user_number is a variable that reads from the keyboard=
     
     case $user_number in
         1)
@@ -170,7 +169,9 @@ do
                     echo '3. Remove A User Admin'
                     echo '4. Grant A User Admin'
                     echo '5. Secure Sudoers File'
-                    echo '6. Return To Main Menu'
+                    echo '6. Create a User Group'
+                    echo '7. Add Users To Group'
+                    echo '8. Return To Main Menu'
 
                     echo 'Enter A Number: '
                 }
@@ -180,7 +181,6 @@ do
 
             while true
             do
-                clear
                 show_user_submenu
                 sleep 1
                 read user_submenu_number; #user_menu_number is a variable that reads from the keyboard
@@ -191,36 +191,36 @@ do
                         read -p 'Enter The Username To Add: ' username
                         read -p 'Do You Want To Give This User Admin Privileges? (y/n): ' admin
 
-                        if [ '$admin' = 'y' ]; then
-                            useradd -m -s /bin/bash -G  '$username'
+                        if [ "$admin" = 'y' ]; then
+                            useradd -m -s /bin/bash -G sudo "$username"
                         else
-                            useradd -m -s /bin/bash '$username'
+                            useradd -m -s /bin/bash "$username"
                         fi
-                        echo 'User $username created successfully!'
+                        echo "User $username created successfully!"
                         sleep 3
                         ;;
                         # Prompts User To Type In A User that will be added, and adds them to the system
                     2)
                         log "User Menu Option 2 selected: Removing A User"
                         read -p 'Enter The Username To Delete: ' username
-                        deluser --remove-home '$username'
-                        echo 'User $username removed successfully!'
+                        deluser --remove-home "$username"
+                        echo "User $username removed successfully!"
                         sleep 3
                         ;;
                         # Prompts User To Type In A User that will be deleted, and removed from the system
                     3)
                         log "User Menu Option 3 selected: Remove User Admin"
                         read -p 'Enter the username: ' username
-                        deluser '$username' sudo
-                        echo 'Admin privileges removed from user $username successfully!'
+                        deluser "$username" sudo
+                        echo "Admin privileges removed from user $username successfully!"
                         sleep 3
                         ;;
                         # Prompts User To Type In A User that will be given admin privileges
                     4)
                         log "User Menu Option 4 selected: Adding User Admin"
                         read -p 'Enter the username: ' username
-                        usermod -aG sudo '$username'
-                        echo 'Admin privileges added to user $username successfully!'
+                        usermod -aG sudo "$username"
+                        echo "Admin privileges added to user $username successfully!"
                         sleep 3
                         ;;
                         # Prompts User To Type In A User that will remove admin privileges from that user
@@ -237,9 +237,25 @@ do
                             sleep 3
                         fi
                         ;;
-                        # Checks Permissions of the Sudoers File to make sure it is not writable, so malicoius users cannot give a user unauthorized admins permissions
                     6)
-                        log "User Menu Option 6 selected: Returning To Main Menu"
+                        log "User Menu Option 6 selected: Creating a User Group"
+                        read -p 'Enter the group name: ' group
+                        groupadd "$group"
+                        echo "Group $group created successfully!"
+                        sleep 3 
+                        ;;
+                    7)
+                        log "User Menu Option 7 selected: Adding Users To Group"
+                        read -p 'Enter the username: ' username
+                        read -p 'Enter the group name: ' group
+                        usermod -aG "$group" "$username"
+                        echo "User $username added to group $group successfully!"
+                        sleep 3
+                        ;;
+
+                    # Checks Permissions of the Sudoers File to make sure it is not writable, so malicoius users cannot give a user unauthorized admins permissions
+                    8)
+                        log "User Menu Option 8 selected: Returning To Main Menu"
                         break
                         ;;
                     *)
